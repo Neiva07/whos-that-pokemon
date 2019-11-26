@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/joho/godotenv"
 )
 
@@ -19,10 +20,10 @@ func (DB *Database) Initialize() {
 
 	username := os.Getenv("db_user")
 	password := os.Getenv("db_pass")
-	// dbName := os.Getenv("db_name")
+	dbName := os.Getenv("db_name")
 	// dbHost := os.Getenv("db_host")
 
-	dbURI := fmt.Sprintf("%s:%s@/?charset=utf8&parseTime=True&loc=Local", username, password)
+	dbURI := fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local", username, password, dbName)
 
 	connection, err := gorm.Open("mysql", dbURI)
 
@@ -30,7 +31,8 @@ func (DB *Database) Initialize() {
 		log.Print(err)
 	}
 	DB.db = connection
-	// DB.db.Debug().AutoMigrate
+	DB.db.Debug().AutoMigrate(&User{})
+
 }
 
 //GetDB exporting the dabaase to the rest of the application
@@ -49,4 +51,6 @@ func init() {
 		log.Print(err)
 	}
 	DB.Initialize()
+	log.Println("DB Initialized!")
+
 }

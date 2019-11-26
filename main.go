@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"os"
 
+	"whos-that-pokemon/controllers"
+	_ "whos-that-pokemon/models"
+
 	"github.com/gorilla/mux"
 )
 
@@ -19,6 +22,7 @@ func (app *App) UseRouter() {
 	app.Router = mux.NewRouter()
 
 	app.Router.HandleFunc("/", mainFunc).Methods("GET")
+	app.Router.HandleFunc("/api/users/signup", controllers.SignUp).Methods("POST")
 
 }
 
@@ -26,11 +30,11 @@ func main() {
 	app := App{}
 
 	app.UseRouter()
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
+
 	log.Fatal(http.ListenAndServe(":"+port, app.Router))
 
 }
