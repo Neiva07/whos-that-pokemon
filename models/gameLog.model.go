@@ -12,8 +12,10 @@ type GameLog struct {
 
 	WinnerScore uint
 	LoserScore  uint
-	Winner      uint
-	Loser       uint
+	WinnerID    uint
+	LoserID     uint
+	Winner      User `gorm:"foreignkey:id;association_foreignkey:WinnerID"`
+	Loser       User `gorm:"foreignkey:id;association_foreignkey:LoserID"`
 }
 
 //validate checks if the data passed is valid
@@ -21,8 +23,7 @@ func (gameLog *GameLog) validate() (map[string]interface{}, bool) {
 
 	supposedWinner := &User{}
 	supposedLoser := &User{}
-
-	err := DB.GetDB().Table("users").Where("id = ?", gameLog.Winner).First(supposedWinner).Error
+	err := DB.GetDB().Table("users").Where("id = ?", gameLog.WinnerID).First(supposedWinner).Error
 	if err == gorm.ErrRecordNotFound {
 		return u.Message(false, "Wrong winner id. Do not exist in the Database"), false
 	}
@@ -30,7 +31,7 @@ func (gameLog *GameLog) validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Database connection error"), false
 	}
 
-	err = DB.GetDB().Table("users").Where("id = ?", gameLog.Loser).First(supposedLoser).Error
+	err = DB.GetDB().Table("users").Where("id = ?", gameLog.LoserID).First(supposedLoser).Error
 	if err == gorm.ErrRecordNotFound {
 		return u.Message(false, "Wrong loser id. Do not exist in the Database"), false
 	}
@@ -52,7 +53,6 @@ func (gameLog *GameLog) Create() map[string]interface{} {
 	if response, ok := gameLog.validate(); !ok {
 		return response
 	}
-
 	DB.GetDB().Create(gameLog)
 
 	if gameLog.ID <= 0 {

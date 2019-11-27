@@ -23,6 +23,8 @@ func (app *App) UseRouter() {
 
 	app.Router.HandleFunc("/", mainFunc).Methods("GET")
 	app.Router.HandleFunc("/api/users/signup", controllers.SignUp).Methods("POST")
+	app.Router.HandleFunc("/api/users/{id}/gameLogs", controllers.RetrieveAllGameLogsFromUser).Methods("GET")
+	app.Router.HandleFunc("/api/gameLogs", controllers.Register).Methods("POST")
 
 }
 
