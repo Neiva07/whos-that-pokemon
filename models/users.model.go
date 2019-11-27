@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strings"
+
 	"github.com/jinzhu/gorm"
 
 	u "whos-that-pokemon/utils"
@@ -10,18 +12,45 @@ import (
 type User struct {
 	gorm.Model
 
-	userID     uint
 	GivenName  string
 	FamilyName string
-	Photo      string
+	ImageURL   string `json:"photo"`
 	Name       string
-	Email      string
-	Token      string
-	id         uint
+	Email      string `gorm:"unique;not null"`
+	Token      string `gorm:"column:token" json:"idToken"`
+	GoogleID   uint   `gorm:"column:google_id"`
+	GameLogs   []GameLog
+	Friends    []*User `gorm:"many2many:friendships;association_jointable_foreignkey:friend_id"`
+}
+
+//validate function check if there's not invalid in the signup process
+func (user *User) validate() (map[string]interface{}, bool) {
+
+	if !strings.Contains((user.Email), "@") {
+
+		return u.Message(false, "Invalid email address. Please, try a real one."), false
+	}
+
+	existUser := &User{}
+
+	err := DB.GetDB().Table("users").Where("email = ?", user.Email).First(existUser).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return u.Message(false, "Connection error. Please try again later."), false
+	}
+	if existUser.Email != "" {
+		return u.Message(false, "Email addres already taken."), false
+	}
+
+	return u.Message(false, "Requirement passed"), true
 }
 
 //Create method to create user and save it in the database
 func (user *User) Create() map[string]interface{} {
+
+	if response, ok := user.validate(); ok == false {
+		return response
+	}
 
 	DB.GetDB().Create(user)
 

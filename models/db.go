@@ -31,7 +31,9 @@ func (DB *Database) Initialize() {
 		log.Print(err)
 	}
 	DB.db = connection
-	DB.db.Debug().AutoMigrate(&User{})
+
+	DB.db.Debug().AutoMigrate(&User{}, &GameLog{})
+	// DB.db.DropTable("users")
 
 }
 
