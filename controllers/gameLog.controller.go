@@ -28,15 +28,6 @@ var Register = func(w http.ResponseWriter, r *http.Request) {
 	u.Response(w, response)
 }
 
-// type GameLog struct {
-// 	gorm.Model
-
-// 	WinnerScore uint
-// 	LoserScore  uint
-// 	Winner      models.User
-// 	Loser       models.User
-// }
-
 //RetrieveAllGameLogsFromUser search games from a specific user
 var RetrieveAllGameLogsFromUser = func(w http.ResponseWriter, r *http.Request) {
 
@@ -44,7 +35,8 @@ var RetrieveAllGameLogsFromUser = func(w http.ResponseWriter, r *http.Request) {
 	log.Println(userID)
 	userGameLogs := &[]models.GameLog{}
 
-	err := models.DB.GetDB().Joins("JOIN users ON users.id = game_logs.winner_id OR users.id = game_logs.loser_id").
+	err := models.DB.GetDB().
+		Joins("JOIN users ON users.id = game_logs.winner_id OR users.id = game_logs.loser_id").
 		Where("game_logs.winner_id or game_logs.loser_id = ?", userID).
 		Preload("Winner").Preload("Loser").
 		Order("created_at DESC").Find(userGameLogs).Error
@@ -58,4 +50,15 @@ var RetrieveAllGameLogsFromUser = func(w http.ResponseWriter, r *http.Request) {
 	response["gameLogs"] = userGameLogs
 
 	u.Response(w, response)
+}
+
+//RetrieveAllGameLogsFromTwoFriends return all game of two specific friends
+var RetrieveAllGameLogsFromTwoFriends = func(w http.ResponseWriter, r *http.Request) {
+
+	// params := mux.Vars(r)
+	// userID := params["id"]
+	// friendID := params["friend_id"]
+
+	// friendsGameLogs := &[]models.GameLog{}
+
 }
