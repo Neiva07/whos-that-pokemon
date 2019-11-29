@@ -25,26 +25,21 @@ var StartGameWithFriend = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newGame := &models.Game{}
-	newGenerationsRecords := &[]models.Generation{}
+	// generations := &[]string{}
 
 	newGame.FriendID = uint(userID)
 	newGame.UserID = uint(friendID)
 
 	err = json.NewDecoder(r.Body).Decode(newGame)
 
-	models.BulkCreateRecords(newGenerationsRecords)
+	_, err = models.BulkCreateRecords(&newGame.Generations)
 
 	if err != nil {
 		u.Response(w, u.Message(false, "Some data was settle wrong. Please try again later."))
 	}
 
 	response := newGame.Create()
-
-	err = newGame.AddGenerations(newGenerationsRecords)
-
-	if err != nil {
-		u.Response(w, u.Message(false, "Fail to create relationship between game and their generations records."))
-	}
+	// err = newGame.AddGenerations(newGenerationsRecords)
 
 	u.Response(w, response)
 

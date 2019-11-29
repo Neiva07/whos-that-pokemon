@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"strings"
-	u "whos-that-pokemon/utils"
 
 	"github.com/jinzhu/gorm"
 )
@@ -19,7 +18,7 @@ type Generation struct {
 	gorm.Model
 
 	GenNumber uint
-	Games     []Game
+	Games     []Game `json:"-"`
 	Status    uint
 }
 
@@ -27,30 +26,24 @@ type Generation struct {
 // type Generations *[]Generation
 
 //BulkCreateRecords multiple Generation instance at once
-func BulkCreateRecords(generations *[]Generation) map[string]interface{} {
+func BulkCreateRecords(newGenrationsRecords *[]Generation) (*[]Generation, error) {
 
 	valueStrings := []string{}
 	valueArgs := []interface{}{}
-	print(*generations)
-	for _, gen := range *generations {
-		valueStrings = append(valueStrings, "(?, ?)")
+	for _, gen := range *newGenrationsRecords {
 
+		valueStrings = append(valueStrings, "(?, ?)")
 		valueArgs = append(valueArgs, gen.GenNumber)
 		valueArgs = append(valueArgs, gen.Status)
 	}
 
-	smt := `INSERT INTO generations VALUES %s`
+	smt := `INSERT INTO generations(gen_number, status) VALUES %s`
 
 	smt = fmt.Sprintf(smt, strings.Join(valueStrings, ","))
-
 	if err := DB.GetDB().Exec(smt, valueArgs...).Error; err != nil {
 		DB.GetDB().Rollback()
-		return u.Message(false, "Something went wrong in the database.")
+		return nil, err
 	}
 
-	response := u.Message(true, "Generations created successfully")
-
-	response["generations"] = generations
-
-	return response
+	return newGenrationsRecords, nil
 }
