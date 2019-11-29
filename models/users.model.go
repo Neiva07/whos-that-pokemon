@@ -64,3 +64,13 @@ func (user *User) Create() map[string]interface{} {
 	response["user"] = user
 	return response
 }
+
+//BeforeCreate sets a random uuid to the user id
+// func (user *User) BeforeCreate(scope *gorm.Scope) error {
+// 	uuidVal, err := uuid.NewV4()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	scope.SetColumn("ID", uuidVal)
+// 	return nil
+// }

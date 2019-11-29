@@ -32,8 +32,7 @@ func (DB *Database) Initialize() {
 	}
 	DB.db = connection
 
-	DB.db.Debug().AutoMigrate(&User{}, &GameLog{})
-	// DB.db.DropTable("users")
+	DB.db.Debug().AutoMigrate(&User{}, &GameLog{}, &Generation{}, &Game{})
 
 }
 
