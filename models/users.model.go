@@ -65,6 +65,14 @@ func (user *User) Create() map[string]interface{} {
 	return response
 }
 
+//Find make a query to find a user in the database
+func (user *User) Find(userID uint) error {
+
+	err := DB.GetDB().Table("users").Where("id = ?", userID).First(&user).Error
+
+	return err
+}
+
 //BeforeCreate sets a random uuid to the user id
 // func (user *User) BeforeCreate(scope *gorm.Scope) error {
 // 	uuidVal, err := uuid.NewV4()

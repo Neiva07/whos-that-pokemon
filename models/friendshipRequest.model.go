@@ -47,3 +47,19 @@ func (friendshipRequest *FriendshipRequest) Create() map[string]interface{} {
 
 	return response
 }
+
+//Find a specific friendship request between 2 users
+func (friendshipRequest *FriendshipRequest) Find(userID uint, friendID uint) error {
+
+	err := DB.GetDB().Table("friendship_requests").Where("user_id = ? AND friend_id = ?", userID, friendID).First(friendshipRequest).Error
+
+	return err
+}
+
+//Delete delete a friendship request
+func (friendshipRequest *FriendshipRequest) Delete() error {
+
+	err := DB.GetDB().Table("friendship_requests").Delete(friendshipRequest).Error
+
+	return err
+}
