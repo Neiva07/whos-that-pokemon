@@ -58,3 +58,9 @@ func (game *Game) Create() map[string]interface{} {
 	response["game"] = game
 	return response
 }
+
+//AddGenerations adds the relation between a game and a slice of generations
+func (game *Game) AddGenerations(generations *[]Generation) error {
+	err := DB.GetDB().Association("generations").Append(&generations).Error
+	return err
+}
