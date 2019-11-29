@@ -60,5 +60,8 @@ func (gameLog *GameLog) Create() map[string]interface{} {
 		return u.Message(false, "Something went wrong. Try again later")
 	}
 
-	return u.Message(true, "GameLog created successfully")
+	response := u.Message(true, "GameLog created successfully")
+	response["game_log"] = gameLog
+
+	return response
 }
