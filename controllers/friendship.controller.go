@@ -1,11 +1,12 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"whos-that-pokemon/models"
 	u "whos-that-pokemon/utils"
+
+	"github.com/jinzhu/gorm"
 
 	"github.com/gorilla/mux"
 )
@@ -60,29 +61,40 @@ var AcceptRequest = func(w http.ResponseWriter, r *http.Request) {
 	err = friendship.Find(userID, friendID)
 	if err != nil {
 		u.Response(w, u.Message(false, "Fail to find friendship request."))
+		return
+	}
+	if err == gorm.ErrRecordNotFound {
+		u.Response(w, u.Message(false, "Request not found"))
+		return
+	}
+	if friendship.FriendshipStatus != models.Requested {
+		u.Response(w, u.Message(false, "There is no friendship request"))
 	}
 
 	err = user.Find(userID)
 	if err != nil {
 		u.Response(w, u.Message(false, "Fail to find user in the database"))
+		return
 	}
 	err = friend.Find(friendID)
 	if err != nil {
 		u.Response(w, u.Message(false, "Fail to find friend in the database"))
+		return
+	}
+	friendship.FriendshipStatus = models.Accepted
+	err = friendship.Update()
+	if err != nil {
+		u.Response(w, u.Message(false, "Something went wrong saving the change into the database."))
+		return
 	}
 
-	err = models.DB.GetDB().Model(&user).Association("Friends").Append(friend).Error
+	err = user.AssociateFriend(friend)
 	if err != nil {
-		log.Println(err)
 		u.Response(w, u.Message(false, "Associassion error. Something went wrong creating the association."))
-	}
-
-	err = friendship.Delete()
-
-	if err != nil {
-		u.Response(w, u.Message(false, "Fail to delete friendship request after accepted."))
+		return
 	}
 
 	u.Response(w, u.Message(true, "Friendship created!"))
+	return
 
 }

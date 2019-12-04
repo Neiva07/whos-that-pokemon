@@ -73,6 +73,13 @@ func (user *User) Find(userID uint) error {
 	return err
 }
 
+//AssociateFriend take a friendship and associate into the type User
+func (user *User) AssociateFriend(friend *User) error {
+
+	err := DB.GetDB().Model(&user).Association("Friends").Append(friend).Error
+	return err
+}
+
 //BeforeCreate sets a random uuid to the user id
 // func (user *User) BeforeCreate(scope *gorm.Scope) error {
 // 	uuidVal, err := uuid.NewV4()
