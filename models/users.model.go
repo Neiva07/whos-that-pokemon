@@ -16,11 +16,11 @@ type User struct {
 	FamilyName string
 	ImageURL   string `json:"photo"`
 	Name       string
-	Email      string    `gorm:"unique;not null"`
-	Token      string    `gorm:"column:token" json:"idToken"`
-	GoogleID   uint      `gorm:"column:google_id"`
-	GameLogs   []GameLog `json:"-"`
-	Friends    []*User   `gorm:"many2many:friendships;association_jointable_foreignkey:friend_id" json:"-"`
+	Email      string  `gorm:"unique;not null"`
+	Token      string  `gorm:"column:token" json:"idToken"`
+	GoogleID   uint    `gorm:"column:google_id"`
+	GameLogs   []Game  `json:"-"`
+	Friends    []*User `gorm:"many2many:friendships;association_jointable_foreignkey:friend_id" json:"-"`
 }
 
 //validate function check if there's not invalid in the signup process

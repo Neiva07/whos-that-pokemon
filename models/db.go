@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/mysql" //drive to import mysql dialect
 	"github.com/joho/godotenv"
 )
 
@@ -32,7 +32,7 @@ func (DB *Database) Initialize() {
 	}
 	DB.db = connection
 
-	DB.db.Debug().AutoMigrate(&User{}, &GameLog{}, &Generation{}, &Game{}, &FriendshipRequest{})
+	DB.db.Debug().AutoMigrate(&User{}, &Generation{}, &Game{}, &Friendship{})
 
 }
 

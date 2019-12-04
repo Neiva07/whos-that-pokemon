@@ -7,9 +7,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+//GenerationStatus manage the possibilities of status from generations
+type GenerationStatus int
+
 const (
-	NotPlayed = iota
+	//NotPlayed yet
+	NotPlayed GenerationStatus = iota
+	//Playing represent the gen current playing
 	Playing
+	//Played represent the gen already played
 	Played
 )
 

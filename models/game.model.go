@@ -6,6 +6,16 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+//GameStatus show possibilities from a game status
+type GameStatus int
+
+const (
+	//Open game started and not finished yet
+	Open GameStatus = iota
+	//Finished game
+	Finished
+)
+
 //Game model to serve while the game is being played.
 type Game struct {
 	gorm.Model
@@ -19,6 +29,7 @@ type Game struct {
 	Timer       uint         // has to have a range(15,30,45,60) ideally
 	User        User         `gorm:"foreignkey:id;association_foreignkey:UserID"`
 	Friend      User         `gorm:"foreignkey:id;association_foreignkey:FriendID"`
+	Status      GameStatus
 }
 
 func (game *Game) validate() (map[string]interface{}, bool) {
