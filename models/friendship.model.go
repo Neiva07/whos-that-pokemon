@@ -76,20 +76,22 @@ func (friendship *Friendship) Create() map[string]interface{} {
 func (friendship *Friendship) Find(userID uint, friendID uint) error {
 
 	err := DB.GetDB().Table("friendships").Where("user_id = ? AND friend_id = ?", userID, friendID).Find(friendship).Error
-	log.Println(err)
+	log.Print(friendship.FriendshipStatus)
 	return err
 }
 
 //Delete delete a friendship request
 func (friendship *Friendship) Delete() error {
-
-	err := DB.GetDB().Table("friendships").Delete(friendship).Error
+	err := DB.GetDB().Model(friendship).Update("friendship_status", Deleted).Error
+	if err != nil {
+		return err
+	}
+	err = DB.GetDB().Table("friendships").Delete(friendship).Error
 	return err
 }
 
 //Update saves the current updated friendship instance
 func (friendship *Friendship) Update() error {
-
-	err := DB.GetDB().Save(friendship).Error
+	err := DB.GetDB().Model(friendship).Update("friendship_status", Accepted).Error
 	return err
 }

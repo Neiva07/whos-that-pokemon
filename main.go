@@ -25,6 +25,7 @@ func (app *App) UseRouter() {
 	app.Router.HandleFunc("/api/users/signup", controllers.SignUp).Methods("POST")
 	app.Router.HandleFunc("/api/users/{id}/friendship/{friend_id}", controllers.CreateFriendship).Methods("POST")
 	app.Router.HandleFunc("/api/users/{friend_id}/friendship/{id}", controllers.AcceptRequest).Methods("PUT")
+	app.Router.HandleFunc("/api/users/{id}/friendship/{friend_id}", controllers.DeleteFriendship).Methods("DELETE")
 	app.Router.HandleFunc("/api/users/{id}/game/{friend_id}", controllers.StartGameWithFriend).Methods("POST")
 	app.Router.HandleFunc("/api/users/{id}/gameLogs", controllers.RetrieveAllGameLogsFromUser).Methods("GET")
 	app.Router.HandleFunc("/api/gameLogs", controllers.Register).Methods("POST")

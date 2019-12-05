@@ -6,32 +6,23 @@ import (
 	"whos-that-pokemon/models"
 	u "whos-that-pokemon/utils"
 
-	"github.com/jinzhu/gorm"
-
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
 //CreateFriendship register a request to connect with the user who requested
 var CreateFriendship = func(w http.ResponseWriter, r *http.Request) {
 
 	newFriendship := &models.Friendship{}
+	userID, friendID, err := parseUserAndFriendIds(r)
 
-	params := mux.Vars(r)
-
-	us, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		u.Response(w, u.Message(false, "invalid id"))
+		u.Response(w, u.Message(false, "Invalid user id or friend id."))
+		return
 	}
-	fr, err := strconv.ParseUint(params["friend_id"], 10, 64)
-	if err != nil {
-		u.Response(w, u.Message(false, "invalid friend id"))
-	}
-
-	userID, friendID := uint(us), uint(fr)
 
 	newFriendship.UserID = userID
 	newFriendship.FriendID = friendID
-	// json.NewDecoder(r.Body).Decode(newFriendship)
 
 	response := newFriendship.Create()
 
@@ -39,36 +30,32 @@ var CreateFriendship = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
-//AcceptRequest create a friendship when the supposedFriend accept the request
+//AcceptRequest create a friendship when the Friend accept the request
 var AcceptRequest = func(w http.ResponseWriter, r *http.Request) {
-
-	params := mux.Vars(r)
-
-	us, err := strconv.ParseUint(params["id"], 10, 64)
-	if err != nil {
-		u.Response(w, u.Message(false, "invalid id"))
-	}
-	fr, err := strconv.ParseUint(params["friend_id"], 10, 64)
-	if err != nil {
-		u.Response(w, u.Message(false, "invalid friend id"))
-	}
-
-	userID, friendID := uint(us), uint(fr)
 
 	user, friend := &models.User{}, &models.User{}
 	friendship := &models.Friendship{}
 
-	err = friendship.Find(userID, friendID)
+	userID, friendID, err := parseUserAndFriendIds(r)
+
 	if err != nil {
-		u.Response(w, u.Message(false, "Fail to find friendship request."))
+		u.Response(w, u.Message(false, "Invalid user id or friend id."))
 		return
 	}
+
+	err = friendship.Find(userID, friendID)
+
 	if err == gorm.ErrRecordNotFound {
 		u.Response(w, u.Message(false, "Request not found"))
 		return
 	}
+	if err != nil {
+		u.Response(w, u.Message(false, "Fail to connect with to the database."))
+		return
+	}
 	if friendship.FriendshipStatus != models.Requested {
 		u.Response(w, u.Message(false, "There is no friendship request"))
+		return
 	}
 
 	err = user.Find(userID)
@@ -81,7 +68,6 @@ var AcceptRequest = func(w http.ResponseWriter, r *http.Request) {
 		u.Response(w, u.Message(false, "Fail to find friend in the database"))
 		return
 	}
-	friendship.FriendshipStatus = models.Accepted
 	err = friendship.Update()
 	if err != nil {
 		u.Response(w, u.Message(false, "Something went wrong saving the change into the database."))
@@ -96,5 +82,49 @@ var AcceptRequest = func(w http.ResponseWriter, r *http.Request) {
 
 	u.Response(w, u.Message(true, "Friendship created!"))
 	return
+}
 
+// DeleteFriendship delete a request or a friendship between 2 users
+var DeleteFriendship = func(w http.ResponseWriter, r *http.Request) {
+	friendship := &models.Friendship{}
+	userID, friendID, err := parseUserAndFriendIds(r)
+	if err != nil {
+		u.Response(w, u.Message(false, "Invalid user id or friend id."))
+		return
+	}
+
+	err = friendship.Find(userID, friendID)
+	if err != nil {
+		u.Response(w, u.Message(false, "Friendship not found."))
+		return
+	}
+
+	err = friendship.Delete()
+
+	if err != nil {
+		u.Response(w, u.Message(false, "Could not delete the friendship"))
+		return
+	}
+
+	u.Response(w, u.Message(false, "Friendship deleted"))
+	return
+
+}
+
+func parseUserAndFriendIds(r *http.Request) (uint, uint, error) {
+
+	params := mux.Vars(r)
+
+	us, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		return 0, 0, err
+	}
+	fr, err := strconv.ParseUint(params["friend_id"], 10, 64)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	userID, friendID := uint(us), uint(fr)
+
+	return userID, friendID, nil
 }
