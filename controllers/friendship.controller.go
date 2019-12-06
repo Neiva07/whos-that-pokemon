@@ -20,10 +20,7 @@ var CreateFriendship = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newFriendship.UserID = userID
-	newFriendship.FriendID = friendID
-
-	response := newFriendship.Create()
+	response := newFriendship.Create(userID, friendID)
 
 	u.Response(w, response)
 
@@ -113,17 +110,6 @@ var AcceptRequest = func(w http.ResponseWriter, r *http.Request) {
 		u.Response(w, u.Message(false, "Something went wrong saving the change into the database."))
 		return
 	}
-
-	// err = user.AssociateFriend(friend)
-	// if err != nil {
-	// 	u.Response(w, u.Message(false, "Associassion error. Something went wrong creating the association."))
-	// 	return
-	// }
-	// // err = friend.AssociateFriend(user)
-	// // if err != nil {
-	// // 	u.Response(w, u.Message(false, "Associassion error. Something went wrong creating the association."))
-	// // 	return
-	// // }
 
 	u.Response(w, u.Message(true, "Friendship created!"))
 	return

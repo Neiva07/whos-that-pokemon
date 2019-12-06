@@ -49,14 +49,15 @@ func (friendship *Friendship) validate() (map[string]interface{}, bool) {
 }
 
 //Create a new friendship request in the database
-func (friendship *Friendship) Create() map[string]interface{} {
+func (friendship *Friendship) Create(userID uint, friendID uint) map[string]interface{} {
 
 	if msg, ok := friendship.validate(); !ok {
 		return msg
 	}
 
 	err := DB.GetDB().Table("friendships").Unscoped().
-		Where(Friendship{UserID: friendship.UserID, FriendID: friendship.FriendID}).
+		Where("user_id = ? AND friend_id = ? OR user_id = ? AND friend_id = ?", userID, friendID, friendID, userID).
+		Attrs(Friendship{UserID: userID, FriendID: friendID}).
 		FirstOrCreate(friendship).Error
 
 	if friendship.FriendshipStatus == Deleted {
