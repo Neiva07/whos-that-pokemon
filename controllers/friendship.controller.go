@@ -51,7 +51,7 @@ var SearchAllFriends = func(w http.ResponseWriter, r *http.Request) {
 	err = models.DB.GetDB().Table("friendships").Select(selection).
 		Joins("JOIN users ON users.id = friendships.user_id AND  friendships.deleted_at IS NULL AND friendships.friend_id = ?", userID).
 		Joins("UNION ?", models.DB.GetDB().Table("friendships").Select(selection).QueryExpr()).
-		Joins("JOIN users ON users.id = friendships.friend_id AND friendships.deleted_at IS NULL AND friendships.user_id = ?", userID).
+		Joins("JOIN users ON users.id = friendships.friend_id AND friendships.deleted_at IS NULL AND friendships.user_id = ? AND friendships.friendship_status = 2", userID).
 		Scan(&results).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {

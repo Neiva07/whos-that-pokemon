@@ -32,14 +32,14 @@ type Friendship struct {
 	FriendshipStatus FriendshipStatus `gorm:"default:1"`
 }
 
-func (friendship *Friendship) validate() (map[string]interface{}, bool) {
+func (friendship *Friendship) validate(userID uint, friendID uint) (map[string]interface{}, bool) {
 
-	err := DB.GetDB().Table("users").Where("id = ?", friendship.UserID).Error
+	err := DB.GetDB().Table("users").Where("id = ?", userID).Error
 
 	if err != nil {
 		return u.Message(false, "User not found in the database."), false
 	}
-	err = DB.GetDB().Table("users").Where("id = ?", friendship.FriendID).Error
+	err = DB.GetDB().Table("users").Where("id = ?", friendID).Error
 	if err != nil {
 		return u.Message(false, "User not found in the database."), false
 	}
@@ -51,7 +51,7 @@ func (friendship *Friendship) validate() (map[string]interface{}, bool) {
 //Create a new friendship request in the database
 func (friendship *Friendship) Create(userID uint, friendID uint) map[string]interface{} {
 
-	if msg, ok := friendship.validate(); !ok {
+	if msg, ok := friendship.validate(userID, friendID); !ok {
 		return msg
 	}
 
