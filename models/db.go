@@ -31,7 +31,7 @@ func (DB *Database) Initialize() {
 		log.Print(err)
 	}
 	DB.db = connection
-
+	DB.db.LogMode(true)
 	DB.db.Debug().AutoMigrate(&User{}, &Generation{}, &Game{}, &Friendship{})
 
 }

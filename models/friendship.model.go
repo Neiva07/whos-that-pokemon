@@ -4,14 +4,16 @@ import (
 	"log"
 	"time"
 	u "whos-that-pokemon/utils"
+
+	"github.com/jinzhu/gorm"
 )
 
 //FriendshipStatus limited the Status inside Friendship.Status
-type FriendshipStatus int
+type FriendshipStatus uint
 
 const (
 	//Requested friendship
-	Requested FriendshipStatus = iota
+	Requested FriendshipStatus = iota + 1
 	//Accepted friendship request
 	Accepted
 	//Deleted friendship
@@ -20,14 +22,14 @@ const (
 
 //Friendship is a Model to store a request to create a friendship
 type Friendship struct {
-	CreatedAt        time.Time `sql:"default:now()"`
-	UpdatedAt        time.Time `sql:"default:now()"`
-	DeletedAt        time.Time `sql:"default:NULL"`
-	UserID           uint      `gorm:"primary_key;auto_increment:false"`
-	FriendID         uint      `gorm:"primary_key;auto_increment:false"`
-	User             User      `gorm:"foreignkey:id;association_foreignkey:UserID" json:"-"`
-	Friend           User      `gorm:"foreignkey:id;association_foreignkey:FriendID" json:"-"`
-	FriendshipStatus FriendshipStatus
+	CreatedAt        time.Time        `sql:"default:now()"`
+	UpdatedAt        time.Time        `sql:"default:now()"`
+	DeletedAt        time.Time        `sql:"default:NULL"`
+	UserID           uint             `gorm:"primary_key;auto_increment:false"`
+	FriendID         uint             `gorm:"primary_key;auto_increment:false"`
+	User             User             `gorm:"foreignkey:id;association_foreignkey:UserID" json:"-"`
+	Friend           User             `gorm:"foreignkey:id;association_foreignkey:FriendID" json:"-"`
+	FriendshipStatus FriendshipStatus `gorm:"default:1"`
 }
 
 func (friendship *Friendship) validate() (map[string]interface{}, bool) {
@@ -42,12 +44,6 @@ func (friendship *Friendship) validate() (map[string]interface{}, bool) {
 		return u.Message(false, "User not found in the database."), false
 	}
 
-	// err = DB.GetDB().Table("friendship_requests").Where("user_requested_id = ? AND supposed_friend_id = ? OR supposed_friend_id = ? AND user_requested_id = ?", friendshipRequest.UserID, friendshipRequest.FriendID, friendshipRequest.FriendID, friendshipRequest.UserID).Error
-
-	// if err != gorm.ErrRecordNotFound {
-	// 	return u.Message(false, "Friendship request ")
-	// }
-
 	return u.Message(true, "Request valid"), true
 
 }
@@ -59,7 +55,22 @@ func (friendship *Friendship) Create() map[string]interface{} {
 		return msg
 	}
 
-	err := DB.GetDB().Create(friendship).Error
+	err := DB.GetDB().Table("friendships").Unscoped().
+		Where(Friendship{UserID: friendship.UserID, FriendID: friendship.FriendID}).
+		FirstOrCreate(friendship).Error
+
+	if friendship.FriendshipStatus == Deleted {
+
+		err = friendship.Update(&Friendship{FriendshipStatus: Requested})
+		if err != nil {
+			return u.Message(false, "Could not update friendship after deleted.")
+		}
+	}
+
+	if friendship.FriendshipStatus == Accepted {
+
+		return u.Message(false, "Friendship already exist")
+	}
 
 	if err != nil {
 		return u.Message(false, "Could not create friendship request.")
@@ -91,7 +102,16 @@ func (friendship *Friendship) Delete() error {
 }
 
 //Update saves the current updated friendship instance
-func (friendship *Friendship) Update() error {
-	err := DB.GetDB().Model(friendship).Update("friendship_status", Accepted).Error
+func (friendship *Friendship) Update(FriendshipFields *Friendship) error {
+	err := DB.GetDB().Unscoped().
+		Model(friendship).Updates(FriendshipFields).Error
+	log.Println(FriendshipFields.FriendshipStatus)
 	return err
+}
+
+//BeforeUpdate a deleted friendship, the delete_at is set to nil
+func (friendship *Friendship) BeforeUpdate(scope *gorm.Scope) {
+	if friendship.FriendshipStatus != Deleted {
+		scope.SetColumn("deleted_at", nil)
+	}
 }

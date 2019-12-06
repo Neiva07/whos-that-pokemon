@@ -76,6 +76,6 @@ func (user *User) Find(userID uint) error {
 //AssociateFriend take a friendship and associate into the type User
 func (user *User) AssociateFriend(friend *User) error {
 
-	err := DB.GetDB().Model(&user).Association("Friends").Append(friend).Error
+	err := DB.GetDB().Model(user).Association("Friends").Append(friend).Error
 	return err
 }

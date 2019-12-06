@@ -2,11 +2,10 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
+	"time"
 	"whos-that-pokemon/models"
 	u "whos-that-pokemon/utils"
 
-	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
 
@@ -14,7 +13,7 @@ import (
 var CreateFriendship = func(w http.ResponseWriter, r *http.Request) {
 
 	newFriendship := &models.Friendship{}
-	userID, friendID, err := parseUserAndFriendIds(r)
+	userID, friendID, err := u.ParseUserAndFriendIDs(r)
 
 	if err != nil {
 		u.Response(w, u.Message(false, "Invalid user id or friend id."))
@@ -30,13 +29,54 @@ var CreateFriendship = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// SearchAllFriends return all friends from a user
+var SearchAllFriends = func(w http.ResponseWriter, r *http.Request) {
+
+	userID, err := u.ParseUserID(r)
+	if err != nil {
+		u.Response(w, u.Message(false, "Invalid user id."))
+		return
+	}
+
+	var results []struct {
+		GivenName        string
+		FamilyName       string
+		Name             string
+		UserID           uint
+		Email            string
+		ImageURL         string
+		FriendshipStatus uint
+		CreatedAt        time.Time
+	}
+
+	selection := `users.given_name, users.family_name, users.id as user_id, users.email, users.name, users.image_url, friendships.friendship_status, friendships.created_at`
+
+	err = models.DB.GetDB().Table("friendships").Select(selection).
+		Joins("JOIN users ON users.id = friendships.user_id AND  friendships.deleted_at IS NULL AND friendships.friend_id = ?", userID).
+		Joins("UNION ?", models.DB.GetDB().Table("friendships").Select(selection).QueryExpr()).
+		Joins("JOIN users ON users.id = friendships.friend_id AND friendships.deleted_at IS NULL AND friendships.user_id = ?", userID).
+		Scan(&results).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		u.Response(w, u.Message(false, "Something went wrong querying the data."))
+		return
+	}
+
+	response := u.Message(true, "Friendships found successfully")
+
+	response["friendships"] = results
+	u.Response(w, response)
+	return
+
+}
+
 //AcceptRequest create a friendship when the Friend accept the request
 var AcceptRequest = func(w http.ResponseWriter, r *http.Request) {
 
 	user, friend := &models.User{}, &models.User{}
 	friendship := &models.Friendship{}
 
-	userID, friendID, err := parseUserAndFriendIds(r)
+	userID, friendID, err := u.ParseUserAndFriendIDs(r)
 
 	if err != nil {
 		u.Response(w, u.Message(false, "Invalid user id or friend id."))
@@ -68,17 +108,22 @@ var AcceptRequest = func(w http.ResponseWriter, r *http.Request) {
 		u.Response(w, u.Message(false, "Fail to find friend in the database"))
 		return
 	}
-	err = friendship.Update()
+	err = friendship.Update(&models.Friendship{FriendshipStatus: models.Accepted})
 	if err != nil {
 		u.Response(w, u.Message(false, "Something went wrong saving the change into the database."))
 		return
 	}
 
-	err = user.AssociateFriend(friend)
-	if err != nil {
-		u.Response(w, u.Message(false, "Associassion error. Something went wrong creating the association."))
-		return
-	}
+	// err = user.AssociateFriend(friend)
+	// if err != nil {
+	// 	u.Response(w, u.Message(false, "Associassion error. Something went wrong creating the association."))
+	// 	return
+	// }
+	// // err = friend.AssociateFriend(user)
+	// // if err != nil {
+	// // 	u.Response(w, u.Message(false, "Associassion error. Something went wrong creating the association."))
+	// // 	return
+	// // }
 
 	u.Response(w, u.Message(true, "Friendship created!"))
 	return
@@ -87,7 +132,7 @@ var AcceptRequest = func(w http.ResponseWriter, r *http.Request) {
 // DeleteFriendship delete a request or a friendship between 2 users
 var DeleteFriendship = func(w http.ResponseWriter, r *http.Request) {
 	friendship := &models.Friendship{}
-	userID, friendID, err := parseUserAndFriendIds(r)
+	userID, friendID, err := u.ParseUserAndFriendIDs(r)
 	if err != nil {
 		u.Response(w, u.Message(false, "Invalid user id or friend id."))
 		return
@@ -106,25 +151,7 @@ var DeleteFriendship = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u.Response(w, u.Message(false, "Friendship deleted"))
+	u.Response(w, u.Message(true, "Friendship deleted"))
 	return
 
-}
-
-func parseUserAndFriendIds(r *http.Request) (uint, uint, error) {
-
-	params := mux.Vars(r)
-
-	us, err := strconv.ParseUint(params["id"], 10, 64)
-	if err != nil {
-		return 0, 0, err
-	}
-	fr, err := strconv.ParseUint(params["friend_id"], 10, 64)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	userID, friendID := uint(us), uint(fr)
-
-	return userID, friendID, nil
 }
