@@ -32,7 +32,7 @@ var StartGameWithFriend = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newGenerationsRecords, err := models.BulkCreateRecords(&newGame.Generations)
+	// newGenerationsRecords, err := models.BulkCreateRecords(&newGame.Generations)
 
 	if err != nil {
 		u.Response(w, u.Message(false, "Some data was settle wrong. Please try again later."))
@@ -40,7 +40,7 @@ var StartGameWithFriend = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := newGame.Create()
-	err = newGame.AddGenerations(newGenerationsRecords)
+	err = newGame.AddGenerations(&newGame.Generations)
 
 	u.Response(w, response)
 	return
@@ -129,6 +129,51 @@ var GetSpecificGame = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := u.Message(true, "Game found.")
+
+	response["game"] = game
+
+	u.Response(w, response)
+	return
+}
+
+//UpdateGame change the status and the score of a game while the game is open
+var UpdateGame = func(w http.ResponseWriter, r *http.Request) {
+
+	gameID, err := u.ParseID(r)
+
+	if err != nil {
+		u.Response(w, u.Message(false, "Invalid Game ID"))
+		return
+	}
+
+	updatedGame, game := &models.Game{}, &models.Game{}
+
+	err = json.NewDecoder(r.Body).Decode(updatedGame)
+
+	if err != nil {
+		u.Response(w, u.Message(false, "Impossible to read the data. Bad formatting"))
+		return
+	}
+
+	err = game.Find(gameID)
+
+	if err == gorm.ErrRecordNotFound {
+		u.Response(w, u.Message(false, "Game not found to update"))
+		return
+	}
+	if err != nil {
+		u.Response(w, u.Message(false, "Something went wrong connecting to the database"))
+		return
+	}
+
+	err = game.Update(updatedGame)
+
+	if err != nil {
+		u.Response(w, u.Message(false, "Could not update the game. Error connecting to the database"))
+		return
+	}
+
+	response := u.Message(true, "Game updated successfully!")
 
 	response["game"] = game
 

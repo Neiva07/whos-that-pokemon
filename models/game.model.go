@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	u "whos-that-pokemon/utils"
 
 	"github.com/jinzhu/gorm"
@@ -25,11 +26,11 @@ type Game struct {
 	FriendID    uint
 	UserScore   uint
 	FriendScore uint
-	Generations []Generation `gorm:"many2many:game_generations"`
-	Timer       uint         // has to have a range(15,30,45,60) ideally
-	User        User         `gorm:"foreignkey:id;association_foreignkey:UserID" json:"-"`
-	Friend      User         `gorm:"foreignkey:id;association_foreignkey:FriendID" json:"-"`
-	Status      GameStatus   `sql:"default:1"`
+	Generations []Generation
+	Timer       uint       // has to have a range(15,30,45,60) ideally
+	User        User       `gorm:"foreignkey:id;association_foreignkey:UserID" json:"-"`
+	Friend      User       `gorm:"foreignkey:id;association_foreignkey:FriendID" json:"-"`
+	Status      GameStatus `sql:"default:1"`
 }
 
 func (game *Game) validate() (map[string]interface{}, bool) {
@@ -80,5 +81,33 @@ func (game *Game) Find(gameID uint) error {
 //AddGenerations adds the relation between a game and a slice of generations
 func (game *Game) AddGenerations(generations *[]Generation) error {
 	err := DB.GetDB().Model(game).Association("generations").Append(&generations).Error
+	return err
+}
+
+//ReplaceGenerations update the correct generations data
+func (game *Game) ReplaceGenerations(generations *[]Generation) error {
+	err := DB.GetDB().Model(game).Association("generations").Replace(generations).Error
+	return err
+}
+
+//Update specific fields from a game
+func (game *Game) Update(gameUpdated *Game) error {
+
+	err := DB.GetDB().Model(game).
+		Updates(&Game{UserScore: gameUpdated.UserScore, FriendScore: gameUpdated.FriendScore, Status: gameUpdated.Status}).Error
+	if err != nil {
+		return err
+	}
+	for i := range gameUpdated.Generations {
+		gameUpdated.Generations[i].ID = game.Generations[i].ID
+		log.Println(game.Generations[i].ID, gameUpdated.Generations[i].ID)
+
+	}
+
+	generations, err := BulkUpdateRecords(&gameUpdated.Generations)
+	if err != nil {
+		return err
+	}
+	err = game.ReplaceGenerations(generations)
 	return err
 }

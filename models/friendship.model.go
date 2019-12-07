@@ -108,7 +108,6 @@ func (friendship *Friendship) Delete() error {
 func (friendship *Friendship) Update(FriendshipFields *Friendship) error {
 	err := DB.GetDB().Unscoped().
 		Model(friendship).Updates(FriendshipFields).Error
-	log.Println(FriendshipFields.FriendshipStatus)
 	return err
 }
 
