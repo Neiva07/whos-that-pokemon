@@ -46,7 +46,14 @@ var SearchAllFriends = func(w http.ResponseWriter, r *http.Request) {
 		CreatedAt        time.Time
 	}
 
-	selection := `users.given_name, users.family_name, users.id as user_id, users.email, users.name, users.image_url, friendships.friendship_status, friendships.created_at`
+	selection := `users.given_name, 
+				users.family_name,
+				users.id as user_id, 
+				users.email, 
+				users.name, 
+				users.image_url, 
+				friendships.friendship_status, 
+				friendships.created_at`
 
 	err = models.DB.GetDB().Table("friendships").Select(selection).
 		Joins("JOIN users ON users.id = friendships.user_id AND  friendships.deleted_at IS NULL AND friendships.friend_id = ?", userID).
