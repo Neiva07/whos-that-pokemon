@@ -27,6 +27,8 @@ type Friendship struct {
 	DeletedAt        time.Time        `sql:"default:NULL"`
 	UserID           uint             `gorm:"primary_key;auto_increment:false"`
 	FriendID         uint             `gorm:"primary_key;auto_increment:false"`
+	UserTotalScore   uint             `sql:"default:0"`
+	FriendTotalScore uint             `sql:"default:0"`
 	User             User             `gorm:"foreignkey:id;association_foreignkey:UserID" json:"-"`
 	Friend           User             `gorm:"foreignkey:id;association_foreignkey:FriendID" json:"-"`
 	FriendshipStatus FriendshipStatus `gorm:"default:1"`

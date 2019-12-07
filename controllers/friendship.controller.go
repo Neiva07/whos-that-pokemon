@@ -43,6 +43,8 @@ var SearchAllFriends = func(w http.ResponseWriter, r *http.Request) {
 		Email            string
 		ImageURL         string
 		FriendshipStatus uint
+		UserTotalScore   uint
+		FriendTotalScore uint
 		CreatedAt        time.Time
 	}
 
@@ -53,6 +55,8 @@ var SearchAllFriends = func(w http.ResponseWriter, r *http.Request) {
 				users.name, 
 				users.image_url, 
 				friendships.friendship_status, 
+				friendships.user_total_score,
+				friendships.friend_total_score
 				friendships.created_at`
 
 	err = models.DB.GetDB().Table("friendships").Select(selection).

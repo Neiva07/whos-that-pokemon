@@ -21,11 +21,12 @@ const (
 
 //Generation of pokemon that are being played
 type Generation struct {
-	gorm.Model
-
-	GenNumber uint
-	Games     []Game `json:"-"`
-	Status    uint
+	gorm.Model  `json:"-"`
+	Games       []Game `json:"-"`
+	GenNumber   uint
+	Status      uint
+	UserScore   uint
+	FriendScore uint
 }
 
 // //Generations hold a group of generations type

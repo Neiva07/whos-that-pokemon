@@ -35,7 +35,7 @@ var ParseUserID = func(r *http.Request) (uint, error) {
 }
 
 //ParseUserAndFriendIDs takes the user and friend from the param and parse to uint
-func ParseUserAndFriendIDs(r *http.Request) (uint, uint, error) {
+var ParseUserAndFriendIDs = func(r *http.Request) (uint, uint, error) {
 
 	params := mux.Vars(r)
 

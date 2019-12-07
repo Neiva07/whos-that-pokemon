@@ -7,11 +7,11 @@ import (
 )
 
 //GameStatus show possibilities from a game status
-type GameStatus int
+type GameStatus uint
 
 const (
 	//Open game started and not finished yet
-	Open GameStatus = iota
+	Open GameStatus = iota + 1
 	//Finished game
 	Finished
 )
@@ -27,9 +27,9 @@ type Game struct {
 	FriendScore uint
 	Generations []Generation `gorm:"many2many:game_generations"`
 	Timer       uint         // has to have a range(15,30,45,60) ideally
-	User        User         `gorm:"foreignkey:id;association_foreignkey:UserID"`
-	Friend      User         `gorm:"foreignkey:id;association_foreignkey:FriendID"`
-	Status      GameStatus
+	User        User         `gorm:"foreignkey:id;association_foreignkey:UserID" json:"-"`
+	Friend      User         `gorm:"foreignkey:id;association_foreignkey:FriendID" json:"-"`
+	Status      GameStatus   `sql:"default:1"`
 }
 
 func (game *Game) validate() (map[string]interface{}, bool) {
@@ -70,8 +70,8 @@ func (game *Game) Create() map[string]interface{} {
 	return response
 }
 
-// //AddGenerations adds the relation between a game and a slice of generations
-// func (game *Game) AddGenerations(generations *[]Generation) error {
-// 	err := DB.GetDB().Association("generations").Append(generations).Error
-// 	return err
-// }
+//AddGenerations adds the relation between a game and a slice of generations
+func (game *Game) AddGenerations(generations *[]Generation) error {
+	err := DB.GetDB().Model(game).Association("generations").Append(&generations).Error
+	return err
+}
