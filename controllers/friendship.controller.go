@@ -29,7 +29,7 @@ var CreateFriendship = func(w http.ResponseWriter, r *http.Request) {
 // SearchAllFriends return all friends from a user
 var SearchAllFriends = func(w http.ResponseWriter, r *http.Request) {
 
-	userID, err := u.ParseUserID(r)
+	userID, err := u.ParseID(r)
 	if err != nil {
 		u.Response(w, u.Message(false, "Invalid user id."))
 		return

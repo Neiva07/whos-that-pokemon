@@ -49,7 +49,7 @@ var StartGameWithFriend = func(w http.ResponseWriter, r *http.Request) {
 //GetAllUserGames retrieve All games from a user
 var GetAllUserGames = func(w http.ResponseWriter, r *http.Request) {
 
-	userID, err := u.ParseUserID(r)
+	userID, err := u.ParseID(r)
 
 	if err != nil {
 		u.Response(w, u.Message(false, "Invalid user id."))
@@ -101,4 +101,37 @@ var GetAllUserGames = func(w http.ResponseWriter, r *http.Request) {
 	u.Response(w, response)
 	return
 
+}
+
+//GetSpecificGame return a specific game details to a user
+var GetSpecificGame = func(w http.ResponseWriter, r *http.Request) {
+
+	gameID, err := u.ParseID(r)
+
+	if err != nil {
+		u.Response(w, u.Message(false, "Invalid Game ID"))
+		return
+	}
+
+	game := &models.Game{}
+
+	err = game.Find(gameID)
+
+	if err == gorm.ErrRecordNotFound {
+
+		u.Response(w, u.Message(false, "Game doesn't exist"))
+		return
+	}
+
+	if err != nil {
+		u.Response(w, u.Message(false, "Something went wrong on searching"))
+		return
+	}
+
+	response := u.Message(true, "Game found.")
+
+	response["game"] = game
+
+	u.Response(w, response)
+	return
 }

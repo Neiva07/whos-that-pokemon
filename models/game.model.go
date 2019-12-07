@@ -70,6 +70,13 @@ func (game *Game) Create() map[string]interface{} {
 	return response
 }
 
+//Find search for a specfic game and return a error if something went wrong
+func (game *Game) Find(gameID uint) error {
+
+	err := DB.GetDB().Preload("Generations").First(game, "id = ?", gameID).Error
+	return err
+}
+
 //AddGenerations adds the relation between a game and a slice of generations
 func (game *Game) AddGenerations(generations *[]Generation) error {
 	err := DB.GetDB().Model(game).Association("generations").Append(&generations).Error

@@ -20,18 +20,18 @@ var Response = func(w http.ResponseWriter, data map[string]interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 
-//ParseUserID takes the user from the param and parse to uint
-var ParseUserID = func(r *http.Request) (uint, error) {
+//ParseID takes the user from the param and parse to uint
+var ParseID = func(r *http.Request) (uint, error) {
 
 	params := mux.Vars(r)
 
-	us, err := strconv.ParseUint(params["id"], 10, 64)
+	i, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		return 0, err
 	}
-	userID := uint(us)
+	id := uint(i)
 
-	return userID, err
+	return id, err
 }
 
 //ParseUserAndFriendIDs takes the user and friend from the param and parse to uint
