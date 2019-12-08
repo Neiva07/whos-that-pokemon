@@ -180,3 +180,37 @@ var UpdateGame = func(w http.ResponseWriter, r *http.Request) {
 	u.Response(w, response)
 	return
 }
+
+// GetAllGamesFromFriends return all games for a specific friendship
+var GetAllGamesFromFriends = func(w http.ResponseWriter, r *http.Request) {
+
+	userID, friendID, err := u.ParseUserAndFriendIDs(r)
+	games := &[]models.Game{}
+
+	if err != nil {
+		u.Response(w, u.Message(false, "Invalid user id or friend id format."))
+		return
+	}
+
+	err = models.DB.GetDB().Table("games").
+		Where("user_id = ? AND friend_id = ? OR friend_id = ? AND user_id = ?", userID, friendID, userID, friendID).
+		Find(games).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		u.Response(w, u.Message(false, "Something went wrong connecting to the database"))
+		return
+	}
+
+	err = models.DB.GetDB().Preload("Generations").Find(games).Error
+
+	if err != nil {
+		u.Response(w, u.Message(false, "Something went wrong searching for generations"))
+		return
+	}
+
+	response := u.Message(true, "Games found successfully!")
+	response["games"] = games
+
+	u.Response(w, response)
+	return
+}

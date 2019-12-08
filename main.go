@@ -23,16 +23,17 @@ func (app *App) UseRouter() {
 
 	app.Router.HandleFunc("/", mainFunc).Methods("GET")
 	app.Router.HandleFunc("/api/users/signup", controllers.SignUp).Methods("POST")
+
 	app.Router.HandleFunc("/api/users/{id}/friendship", controllers.SearchAllFriends).Methods("GET")
 	app.Router.HandleFunc("/api/users/{id}/friendship/{friend_id}", controllers.CreateFriendship).Methods("POST")
 	app.Router.HandleFunc("/api/users/{friend_id}/friendship/{id}", controllers.AcceptRequest).Methods("PUT")
 	app.Router.HandleFunc("/api/users/{id}/friendship/{friend_id}", controllers.DeleteFriendship).Methods("DELETE")
-	app.Router.HandleFunc("/api/users/{id}/game/{friend_id}", controllers.StartGameWithFriend).Methods("POST")
+
+	app.Router.HandleFunc("/api/users/{id}/friendship/{friend_id}/games", controllers.GetAllGamesFromFriends).Methods("GET")
+	app.Router.HandleFunc("/api/users/{id}/games/{friend_id}", controllers.StartGameWithFriend).Methods("POST")
 	app.Router.HandleFunc("/api/users/{id}/games", controllers.GetAllUserGames).Methods("GET")
 	app.Router.HandleFunc("/api/games/{id}", controllers.GetSpecificGame).Methods("GET")
 	app.Router.HandleFunc("/api/games/{id}", controllers.UpdateGame).Methods("PUT")
-	app.Router.HandleFunc("/api/users/{id}/gameLogs", controllers.RetrieveAllGameLogsFromUser).Methods("GET")
-	app.Router.HandleFunc("/api/gameLogs", controllers.Register).Methods("POST")
 
 }
 

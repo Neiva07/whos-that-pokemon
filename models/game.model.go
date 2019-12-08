@@ -101,7 +101,6 @@ func (game *Game) Update(gameUpdated *Game) error {
 	for i := range gameUpdated.Generations {
 		gameUpdated.Generations[i].ID = game.Generations[i].ID
 		log.Println(game.Generations[i].ID, gameUpdated.Generations[i].ID)
-
 	}
 
 	generations, err := BulkUpdateRecords(&gameUpdated.Generations)
