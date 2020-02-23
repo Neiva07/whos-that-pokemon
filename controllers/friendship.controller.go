@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"time"
 	"whos-that-pokemon/models"
@@ -56,7 +57,7 @@ var SearchAllFriends = func(w http.ResponseWriter, r *http.Request) {
 				users.image_url, 
 				friendships.friendship_status, 
 				friendships.user_total_score,
-				friendships.friend_total_score
+				friendships.friend_total_score,
 				friendships.created_at`
 
 	err = models.DB.GetDB().Table("friendships").Select(selection).
@@ -67,6 +68,7 @@ var SearchAllFriends = func(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		u.Response(w, u.Message(false, "Something went wrong querying the data."))
+		log.Println(err)
 		return
 	}
 

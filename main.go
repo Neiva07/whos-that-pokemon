@@ -9,6 +9,8 @@ import (
 	"whos-that-pokemon/controllers"
 	_ "whos-that-pokemon/models"
 
+	application "whos-that-pokemon/app"
+
 	"github.com/gorilla/mux"
 )
 
@@ -22,7 +24,7 @@ func (app *App) UseRouter() {
 	app.Router = mux.NewRouter()
 
 	app.Router.HandleFunc("/", mainFunc).Methods("GET")
-	app.Router.HandleFunc("/api/users/signup", controllers.SignUp).Methods("POST")
+	app.Router.HandleFunc("/api/users/signin", controllers.SignIn).Methods("POST")
 
 	app.Router.HandleFunc("/api/users/{id}/friendship", controllers.SearchAllFriends).Methods("GET")
 	app.Router.HandleFunc("/api/users/{id}/friendship/{friend_id}", controllers.CreateFriendship).Methods("POST")
@@ -35,6 +37,8 @@ func (app *App) UseRouter() {
 	app.Router.HandleFunc("/api/games/{id}", controllers.GetSpecificGame).Methods("GET")
 	app.Router.HandleFunc("/api/games/{id}", controllers.UpdateGame).Methods("PUT")
 
+	app.Router.Use(application.Authentication)
+
 }
 
 func main() {
@@ -45,6 +49,8 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+
+	log.Println("listing on port:", port)
 
 	log.Fatal(http.ListenAndServe(":"+port, app.Router))
 

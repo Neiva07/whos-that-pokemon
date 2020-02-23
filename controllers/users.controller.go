@@ -8,8 +8,8 @@ import (
 	u "whos-that-pokemon/utils"
 )
 
-//SignUp create a user in the database
-var SignUp = func(w http.ResponseWriter, r *http.Request) {
+//SignIn create a user in the database
+var SingIn = func(w http.ResponseWriter, r *http.Request) {
 
 	newUser := &models.User{}
 
@@ -18,6 +18,8 @@ var SignUp = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		u.Response(w, u.Message(false, "Something went wrong. Please, try again."))
 	}
+
+	newUser = (r.Context().Value(newUser)).(*models.User)
 
 	response := newUser.Create()
 
