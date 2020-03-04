@@ -5,11 +5,11 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
 	models "whos-that-pokemon/models"
 	u "whos-that-pokemon/utils"
 
-	"google.golang.org/api/oauth2/v1"
+	"golang.org/x/oauth2"
+	googleOauth "google.golang.org/api/oauth2/v1"
 	"google.golang.org/api/option"
 )
 
@@ -50,43 +50,46 @@ var Authentication = func(next http.Handler) http.Handler {
 			u.Response(w, response)
 			return
 		}
-		ctx := r.Context()
-		token, err := config.Exchange(ctx, splittedToken[1])
+		authCode := splittedToken[1]
+
+		user := &models.User{}
+
+		err := models.Redis.Get(authCode).Scan(user)
+
 		if err != nil {
-			response = u.Message(false, "Something went wrong creating a token")
-			w.WriteHeader(http.StatusForbidden)
+			response = u.Message(false, "Error retrieving user from the session system.")
+			w.WriteHeader(http.StatusUnauthorized)
 			w.Header().Add("Content-Type", "application/json")
+			response["error"] = err
+			log.Println(err)
 			u.Response(w, response)
 			return
 		}
-		if !token.Valid() {
-			// client := config.Client(ctx, token)
-		}
-
-		tokenSource := config.TokenSource(ctx, token)
-		oauth2Service, err := oauth2.NewService(ctx, option.WithTokenSource(tokenSource))
-
-		if err != nil {
-			response = u.Message(false, "Error while authenticating with Google Oauth2.0")
-			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
-			u.Response(w, response)
-			return
-		}
-		user, err := oauth2Service.Userinfo.Get().Do()
-		if err != nil {
-			response = u.Message(false, "Error to access User Profile")
-			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
-			u.Response(w, response)
-			return
-		}
-		account := &models.User{}
-
-		ctx = context.WithValue(ctx, account, user)
+		ctx := context.WithValue(r.Context(), "user", user)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 
 	})
+}
+
+//TokenHandler receive authCode to exchange for the respective token
+var TokenHandler = func(authCode string, ctx context.Context) (*oauth2.Token, error) {
+
+	token, err := config.Exchange(ctx, authCode)
+
+	return token, err
+}
+
+//GetGoogleUserInfo returns the user from the google profile api
+var GetGoogleUserInfo = func(token *oauth2.Token, ctx context.Context) (*googleOauth.Userinfoplus, error) {
+	tokenSource := config.TokenSource(ctx, token)
+	oauth2Service, err := googleOauth.NewService(ctx, option.WithTokenSource(tokenSource))
+
+	if err != nil {
+		return nil, err
+	}
+	user, err := oauth2Service.Userinfo.Get().Do()
+
+	return user, err
 }

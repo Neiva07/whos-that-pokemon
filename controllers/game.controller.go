@@ -57,17 +57,18 @@ var GetAllUserGames = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var results []struct {
-		GivenName   string
-		FamilyName  string
-		Name        string
-		Email       string
-		UserScore   uint
-		FriendScore uint
-		FriendID    uint
-		UserID      uint
-		CreatedAt   time.Time
-		Timer       uint
-		Status      models.GameStatus
+		GivenName   string            `json:"givenName"`
+		FamilyName  string            `json:"familyName"`
+		Name        string            `json:"name"`
+		Email       string            `json:"email"`
+		UserScore   uint              `json:"userScore"`
+		FriendScore uint              `json:"friendScore"`
+		ImageURL    string            `json:"photo"`
+		FriendID    uint              `json:"friendId"`
+		UserID      uint              `json:"userId"`
+		CreatedAt   time.Time         `json:"createdAt"`
+		Timer       uint              `json:"timer"`
+		Status      models.GameStatus `json:"status"`
 	}
 
 	selection := `
@@ -78,6 +79,7 @@ var GetAllUserGames = func(w http.ResponseWriter, r *http.Request) {
 			games.user_score,
 			games.friend_score,
 			games.friend_id,
+			games.imageURL,
 			games.user_id,
 			games.created_at,
 			games.status,

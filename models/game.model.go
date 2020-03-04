@@ -11,8 +11,10 @@ import (
 type GameStatus uint
 
 const (
+	//Request status means not accepted yet
+	Request GameStatus = iota + 1
 	//Open game started and not finished yet
-	Open GameStatus = iota + 1
+	Open
 	//Finished game
 	Finished
 )
@@ -20,7 +22,7 @@ const (
 //Game model to serve while the game is being played.
 type Game struct {
 	gorm.Model
-	//UserID start the game
+	//UserID of who started the game
 	UserID uint
 	//FriendID is who receive the invitation
 	FriendID    uint

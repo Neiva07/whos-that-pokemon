@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql" //drive to import mysql dialect
 	"github.com/joho/godotenv"
@@ -14,6 +15,9 @@ import (
 type Database struct {
 	db *gorm.DB
 }
+
+//Redis client to cache sessions in the application
+var Redis *redis.Client
 
 //Initialize method to initialize the database
 func (DB *Database) Initialize() {
@@ -45,12 +49,20 @@ func (DB *Database) GetDB() *gorm.DB {
 var DB Database
 
 func init() {
-
 	err := godotenv.Load(os.ExpandEnv("$GOPATH/src/whos-that-pokemon/.env"))
 
 	if err != nil {
 		log.Print(err)
 	}
+
+	address := fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
+	log.Println(address)
+
+	Redis = redis.NewClient(&redis.Options{
+		Addr:     address,
+		Password: os.Getenv("redis_password"),
+		DB:       0,
+	})
 	DB.Initialize()
 	log.Println("DB Initialized!")
 

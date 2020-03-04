@@ -22,16 +22,16 @@ const (
 
 //Friendship is a Model to store a request to create a friendship
 type Friendship struct {
-	CreatedAt        time.Time        `sql:"default:now()"`
+	CreatedAt        time.Time        `sql:"default:now()" json:"createdAt"`
 	UpdatedAt        time.Time        `sql:"default:now()"`
 	DeletedAt        time.Time        `sql:"default:NULL"`
 	UserID           uint             `gorm:"primary_key;auto_increment:false"`
 	FriendID         uint             `gorm:"primary_key;auto_increment:false"`
-	UserTotalScore   uint             `sql:"default:0"`
-	FriendTotalScore uint             `sql:"default:0"`
+	UserTotalScore   uint             `sql:"default:0" json:"userTotalScore"`
+	FriendTotalScore uint             `sql:"default:0" json:"friendTotalScore"`
 	User             User             `gorm:"foreignkey:id;association_foreignkey:UserID" json:"-"`
 	Friend           User             `gorm:"foreignkey:id;association_foreignkey:FriendID" json:"-"`
-	FriendshipStatus FriendshipStatus `gorm:"default:1"`
+	FriendshipStatus FriendshipStatus `gorm:"default:1" json:"friendshipStatus"`
 }
 
 func (friendship *Friendship) validate(userID uint, friendID uint) (map[string]interface{}, bool) {

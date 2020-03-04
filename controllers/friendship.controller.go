@@ -33,20 +33,21 @@ var SearchAllFriends = func(w http.ResponseWriter, r *http.Request) {
 	userID, err := u.ParseID(r)
 	if err != nil {
 		u.Response(w, u.Message(false, "Invalid user id."))
+		log.Println(userID, err)
 		return
 	}
 
 	var results []struct {
-		GivenName        string
-		FamilyName       string
-		Name             string
-		UserID           uint
-		Email            string
-		ImageURL         string
-		FriendshipStatus uint
-		UserTotalScore   uint
-		FriendTotalScore uint
-		CreatedAt        time.Time
+		GivenName        string    `json:"givenName"`
+		FamilyName       string    `json:"familyName"`
+		Name             string    `json:"name"`
+		UserID           uint      `json:"friendId"`
+		Email            string    `json:"email"`
+		ImageURL         string    `json:"photo"`
+		FriendshipStatus uint      `json:"friendshipStatus"`
+		UserTotalScore   uint      `json:"userTotalScore"`
+		FriendTotalScore uint      `json:"friendTotalScore"`
+		CreatedAt        time.Time `json:"createdAt"`
 	}
 
 	selection := `users.given_name, 
